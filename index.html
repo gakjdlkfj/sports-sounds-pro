@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Sports Sounds Pro — Web Edition</title>
+
+    <!-- main stylesheet -->
+    <link rel="stylesheet" href="styles.css" />
+
+    <!-- OPTIONAL: streaming SDKs (comment-out if unused) -->
+    <script src="https://sdk.scdn.co/spotify-player.js"></script>
+    <script src="https://js-cdn.music.apple.com/musickit/v1/musickit.js"></script>
+  </head>
+
+  <body>
+    <div id="app">
+      <!-- 1) LETTER TABS (A–J) -->
+      <div id="letter-tabs"></div>
+
+      <!-- 2) CATEGORY COLUMN (Baseball, Cheers, …) -->
+      <div id="sidebar">
+        <button class="wide-btn accent" id="btn-add-category">+ Add Category</button>
+        <ul id="category-list"></ul>
+      </div>
+
+      <!-- 3) MAIN PANE -->
+      <div id="main">
+        <!-- CONTROL RIBBON -->
+        <div id="controls" class="panel">
+          <button data-cmd="cue">Cue</button>
+          <button data-cmd="multi">Multi-Play</button>
+          <button data-cmd="auto-fade">Auto Fade</button>
+          <button data-cmd="eq">EQ/Rev/Temp</button>
+
+          <button data-cmd="loop">Loop</button>
+          <button data-cmd="next">Next</button>
+          <button data-cmd="find">Find</button>
+          <button data-cmd="pause">Pause</button>
+
+          <button data-cmd="rapid">Rapid Fire</button>
+          <button data-cmd="shuffle">Shuffle</button>
+
+          <button data-cmd="talk">Talk</button>
+          <button data-cmd="playlist">Play List</button>
+          <button data-cmd="reset-page">Reset Page</button>
+
+          <button data-cmd="stop" class="danger">STOP</button>
+        </div>
+
+        <!-- TRANSPORT / METERS -->
+        <div id="transport" class="panel">
+          <div id="meters">
+            <div class="meter"><div class="bar" id="meterL"></div></div>
+            <div class="meter"><div class="bar" id="meterR"></div></div>
+          </div>
+
+          <div id="time-boxes">
+            <div><small>Total Time</small><span id="time-total">00:00</span></div>
+            <div><small>Elapsed</small><span id="time-elapsed">00:00</span></div>
+            <div><small>Remaining</small><span id="time-left">00:00</span></div>
+          </div>
+
+          <div id="progress">
+            <div id="progress-bar"></div>
+          </div>
+        </div>
+
+        <!-- TILE GRID -->
+        <div id="grid"></div>
+      </div>
+    </div>
+
+    <!-- hidden file input -->
+    <input type="file" id="file-input" multiple accept="audio/*" hidden />
+
+    <!-- core logic -->
+    <script src="script.js"></script>
+  </body>
+</html>
