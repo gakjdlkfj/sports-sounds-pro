@@ -1,80 +1,84 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width,initial-scale=1" />
-    <title>Sports Sounds Pro — Web Edition</title>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Sports Sounds Pro — Web</title>
 
-    <!-- main stylesheet -->
-    <link rel="stylesheet" href="styles.css" />
+  <link rel="stylesheet" href="styles.css">
 
-    <!-- OPTIONAL: streaming SDKs (comment-out if unused) -->
-    <script src="https://sdk.scdn.co/spotify-player.js"></script>
-    <script src="https://js-cdn.music.apple.com/musickit/v1/musickit.js"></script>
-  </head>
+  <!-- OPTIONAL streaming SDKs (comment out if unused) -->
+  <script src="https://sdk.scdn.co/spotify-player.js"></script>
+  <script src="https://js-cdn.music.apple.com/musickit/v1/musickit.js"></script>
+</head>
+<body>
+<div id="app">
 
-  <body>
-    <div id="app">
-      <!-- 1) LETTER TABS (A–J) -->
-      <div id="letter-tabs"></div>
+  <!-- LETTER TABS (A-J) -->
+  <div id="letter-tabs"></div>
 
-      <!-- 2) CATEGORY COLUMN (Baseball, Cheers, …) -->
-      <div id="sidebar">
-        <button class="wide-btn accent" id="btn-add-category">+ Add Category</button>
-        <ul id="category-list"></ul>
-      </div>
+  <!-- CATEGORY COLUMN -->
+  <div id="sidebar">
+    <button id="btn-add-category" class="wide-btn accent">+ Add Category</button>
+    <ul id="category-list"></ul>
+  </div>
 
-      <!-- 3) MAIN PANE -->
-      <div id="main">
-        <!-- CONTROL RIBBON -->
-        <div id="controls" class="panel">
-          <button data-cmd="cue">Cue</button>
-          <button data-cmd="multi">Multi-Play</button>
-          <button data-cmd="auto-fade">Auto Fade</button>
-          <button data-cmd="eq">EQ/Rev/Temp</button>
+  <!-- MAIN PANE -->
+  <div id="main">
 
-          <button data-cmd="loop">Loop</button>
-          <button data-cmd="next">Next</button>
-          <button data-cmd="find">Find</button>
-          <button data-cmd="pause">Pause</button>
+    <!-- CONTROL RIBBON -->
+    <div id="controls" class="panel">
+      <button data-cmd="cue">Cue</button>
+      <button data-cmd="multi">Multi-Play</button>
+      <button data-cmd="autoFade">Auto Fade</button>
+      <button data-cmd="eq">EQ/Rev/Temp</button>
 
-          <button data-cmd="rapid">Rapid Fire</button>
-          <button data-cmd="shuffle">Shuffle</button>
+      <button data-cmd="loop">Loop</button>
+      <button data-cmd="next">Next</button>
+      <button data-cmd="find">Find</button>
+      <button data-cmd="pause">Pause</button>
 
-          <button data-cmd="talk">Talk</button>
-          <button data-cmd="playlist">Play List</button>
-          <button data-cmd="reset-page">Reset Page</button>
+      <button data-cmd="rapid">Rapid Fire</button>
+      <button data-cmd="shuffle">Shuffle</button>
 
-          <button data-cmd="stop" class="danger">STOP</button>
-        </div>
+      <button data-cmd="talk">Talk</button>
+      <button data-cmd="playlist">Play List</button>
+      <button data-cmd="resetPage">Reset Page</button>
 
-        <!-- TRANSPORT / METERS -->
-        <div id="transport" class="panel">
-          <div id="meters">
-            <div class="meter"><div class="bar" id="meterL"></div></div>
-            <div class="meter"><div class="bar" id="meterR"></div></div>
-          </div>
-
-          <div id="time-boxes">
-            <div><small>Total Time</small><span id="time-total">00:00</span></div>
-            <div><small>Elapsed</small><span id="time-elapsed">00:00</span></div>
-            <div><small>Remaining</small><span id="time-left">00:00</span></div>
-          </div>
-
-          <div id="progress">
-            <div id="progress-bar"></div>
-          </div>
-        </div>
-
-        <!-- TILE GRID -->
-        <div id="grid"></div>
-      </div>
+      <button data-cmd="stop" class="danger">STOP</button>
     </div>
 
-    <!-- hidden file input -->
-    <input type="file" id="file-input" multiple accept="audio/*" hidden />
+    <!-- UTILITY RIBBON -->
+    <div id="utils" class="panel">
+      <button id="btn-add-files">Add Local File(s)</button>
+      <button id="btn-spotify">Connect Spotify</button>
+      <button id="btn-apple">Connect Apple Music</button>
+    </div>
 
-    <!-- core logic -->
-    <script src="script.js"></script>
-  </body>
+    <!-- TRANSPORT -->
+    <div id="transport" class="panel">
+      <div id="meters">
+        <div class="meter"><div class="bar" id="meterL"></div></div>
+        <div class="meter"><div class="bar" id="meterR"></div></div>
+      </div>
+
+      <div id="time-boxes">
+        <div><small>Total</small><span id="time-total">00:00</span></div>
+        <div><small>Elapsed</small><span id="time-elapsed">00:00</span></div>
+        <div><small>Left</small><span id="time-left">00:00</span></div>
+      </div>
+
+      <div id="progress"><div id="progress-bar"></div></div>
+    </div>
+
+    <!-- TILE GRID -->
+    <div id="grid"></div>
+  </div>
+</div>
+
+<!-- hidden file input -->
+<input type="file" id="file-input" multiple accept="audio/*" hidden>
+
+<script src="script.js"></script>
+</body>
 </html>
