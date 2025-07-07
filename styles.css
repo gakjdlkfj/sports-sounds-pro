@@ -1,38 +1,28 @@
 :root{
-  --accent:#00bcd4;
-  --accent-d:#0097a7;
-  --danger:#d32f2f;
-  --green:#1DB954;                 /* Spotify green */
-
-  --bg:#fafafa;
-  --panel:#e7e7e7;
-  --font:system-ui,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
-
-  --w-tabs:60px;
-  --w-side:180px;
-  --tile-w:120px;
-  --tile-h:70px;
-  --gap:4px;
+  --accent:#00bcd4;--accent-d:#0097a7;--danger:#d32f2f;--green:#1DB954;
+  --bg:#fafafa;--panel:#e7e7e7;--font:system-ui,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  --w-tabs:60px;--w-side:180px;--tile-w:120px;--tile-h:70px;--gap:4px;
 }
+
 *{box-sizing:border-box;margin:0;padding:0;font-family:var(--font)}
 html,body{height:100%;background:var(--bg);color:#222}
 button:disabled{opacity:.4;cursor:not-allowed}
 
-/* ---------- loader ---------- */
+/* loader */
 #loader{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:var(--bg);z-index:99}
 .spinner{width:48px;height:48px;border:6px solid #ccc;border-top-color:var(--accent);border-radius:50%;animation:spin 1s linear infinite}
 @keyframes spin{to{transform:rotate(360deg)}}
 #loader.fade{transition:opacity .4s ease;opacity:0;pointer-events:none}
 
-/* ---------- layout ---------- */
+/* layout */
 #app{display:flex;height:100%}
 
-/* Letter tabs */
+/* tabs */
 #letter-tabs{width:var(--w-tabs);background:#f5f5f5;border-right:1px solid #bbb;display:flex;flex-direction:column}
 #letter-tabs button{flex:1;border:none;border-bottom:1px solid #bbb;font-weight:bold;cursor:pointer}
 #letter-tabs button.active{background:var(--accent);color:#fff}
 
-/* Sidebar */
+/* sidebar */
 #sidebar{width:var(--w-side);background:#fbfbfb;border-right:1px solid #bbb;display:flex;flex-direction:column}
 .wide{width:100%;padding:8px;border:none;cursor:pointer;font-weight:bold}
 .accent{background:var(--accent);color:#fff}
@@ -40,37 +30,31 @@ button:disabled{opacity:.4;cursor:not-allowed}
 #cat-list li{padding:8px;border-bottom:1px solid #ddd;cursor:pointer}
 #cat-list li.active{background:var(--accent-d);color:#fff}
 
-/* Main column */
+/* main / panels */
 #main{flex:1;display:flex;flex-direction:column}
-
-/* Panels */
 .panel{padding:6px;background:var(--panel);border-bottom:1px solid #aaa;display:flex;flex-wrap:wrap;gap:var(--gap)}
 #controls button,#util button{padding:5px 10px;border:none;background:#fff;cursor:pointer;font-size:.85rem}
 #controls .danger{background:var(--danger);color:#fff}
 
-/* Meters & progress */
+/* meters & progress */
 canvas{background:#333}
 #time-box{display:flex;gap:10px;font-weight:bold;font-size:.75rem;margin-inline:8px}
 #time-box div{display:flex;flex-direction:column;align-items:center}
 #progress{flex:1;height:6px;background:#888;position:relative}
 #prog-bar{position:absolute;inset:0 100% 0 0;background:var(--accent)}
 
-/* Grid */
+/* grid */
 #grid{flex:1;padding:6px;overflow:auto;display:grid;gap:var(--gap);grid-template-columns:repeat(auto-fill,minmax(var(--tile-w),1fr))}
 .tile{position:relative;height:var(--tile-h);display:flex;align-items:center;justify-content:center;text-align:center;font-weight:bold;color:#fff;cursor:pointer;user-select:none}
 .tile.inactive{opacity:.4}
 .tile.spotify{background:var(--green)}
 
-/* gear icon (settings) */
-.gear{
-  position:absolute;top:4px;right:4px;font-size:12px;
-  padding:2px 4px;border-radius:2px;background:rgba(0,0,0,.6);
-  color:#fff;display:none;cursor:pointer;
-}
+/* gear icon */
+.gear{position:absolute;top:4px;right:4px;font-size:12px;padding:2px 4px;border-radius:2px;background:rgba(0,0,0,.6);color:#fff;display:none;cursor:pointer}
 .tile:hover .gear{display:block}
 
-/* Drag-hover outline */
+/* drag outline */
 .drag-hover{outline:3px dashed var(--accent);outline-offset:-6px}
 
-/* Highlight util button when Spotify connected */
+/* Spotify connected highlight */
 .connected #btn-spotify-connect{background:var(--green);color:#fff}
