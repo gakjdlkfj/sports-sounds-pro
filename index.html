@@ -7,24 +7,24 @@
 
   <link rel="stylesheet" href="styles.css">
 
-  <!-- OPTIONAL streaming SDKs (comment out if unused) -->
+  <!-- OPTIONAL: comment out if you don’t need the streaming hooks -->
   <script src="https://sdk.scdn.co/spotify-player.js"></script>
   <script src="https://js-cdn.music.apple.com/musickit/v1/musickit.js"></script>
 </head>
 <body>
 <div id="app">
 
-  <!-- LETTER TABS (A-J) -->
+  <!-- (A–J) LETTER TABS -->
   <div id="letter-tabs"></div>
 
-  <!-- CATEGORY COLUMN -->
-  <div id="sidebar">
-    <button id="btn-add-category" class="wide-btn accent">+ Add Category</button>
-    <ul id="category-list"></ul>
-  </div>
+  <!-- CATEGORY SIDEBAR -->
+  <aside id="sidebar">
+    <button id="btn-add-cat" class="wide accent">+ Add Category</button>
+    <ul id="cat-list"></ul>
+  </aside>
 
-  <!-- MAIN PANE -->
-  <div id="main">
+  <!-- MAIN COLUMN -->
+  <main id="main">
 
     <!-- CONTROL RIBBON -->
     <div id="controls" class="panel">
@@ -49,34 +49,34 @@
     </div>
 
     <!-- UTILITY RIBBON -->
-    <div id="utils" class="panel">
-      <button id="btn-add-files">Add Local File(s)</button>
+    <div id="util" class="panel">
+      <button id="btn-files">Add Local File(s)</button>
       <button id="btn-spotify">Connect Spotify</button>
       <button id="btn-apple">Connect Apple Music</button>
     </div>
 
-    <!-- TRANSPORT -->
+    <!-- TRANSPORT + METERS -->
     <div id="transport" class="panel">
       <div id="meters">
         <div class="meter"><div class="bar" id="meterL"></div></div>
         <div class="meter"><div class="bar" id="meterR"></div></div>
       </div>
 
-      <div id="time-boxes">
-        <div><small>Total</small><span id="time-total">00:00</span></div>
-        <div><small>Elapsed</small><span id="time-elapsed">00:00</span></div>
-        <div><small>Left</small><span id="time-left">00:00</span></div>
+      <div id="time-box">
+        <div><small>Total</small><span id="t-total">00:00</span></div>
+        <div><small>Elapsed</small><span id="t-elap">00:00</span></div>
+        <div><small>Left</small><span id="t-left">00:00</span></div>
       </div>
 
-      <div id="progress"><div id="progress-bar"></div></div>
+      <div id="progress"><div id="prog-bar"></div></div>
     </div>
 
-    <!-- TILE GRID -->
-    <div id="grid"></div>
-  </div>
+    <!-- GRID -->
+    <section id="grid"></section>
+  </main>
 </div>
 
-<!-- hidden file input -->
+<!-- hidden uploader -->
 <input type="file" id="file-input" multiple accept="audio/*" hidden>
 
 <script src="script.js"></script>
