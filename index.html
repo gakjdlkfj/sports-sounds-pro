@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>Sports Sounds Pro — Web v7</title>
+  <title>Sports Sounds Pro — Web</title>
 
   <link rel="stylesheet" href="styles.css">
 
@@ -12,46 +12,40 @@
   <script src="https://js-cdn.music.apple.com/musickit/v1/musickit.js"></script>
 </head>
 <body>
-<!-- Loader (auto-fades after 10 s just in case) -->
+<!-- loader -->
 <div id="loader"><div class="spinner"></div>Loading&nbsp;library…</div>
 
 <div id="app" hidden>
 
-  <!-- LETTER TABS -->
+  <!-- A-J tabs -->
   <div id="letter-tabs"></div>
 
-  <!-- CATEGORY SIDEBAR -->
+  <!-- category sidebar -->
   <aside id="sidebar">
     <button id="btn-add-cat" class="wide accent">+ Add Category</button>
     <ul id="cat-list"></ul>
   </aside>
 
-  <!-- MAIN COLUMN -->
+  <!-- main -->
   <main id="main">
 
-    <!-- CONTROL RIBBON -->
+    <!-- control ribbon -->
     <div id="controls" class="panel">
-      <button data-cmd="cue">Cue</button>
-      <button data-cmd="multi">Multi-Play</button>
-      <button data-cmd="autoFade">Auto Fade</button>
-      <button data-cmd="eq">EQ/Rev/Temp</button>
+      <button data-cmd="cue">Cue</button><button data-cmd="multi">Multi-Play</button>
+      <button data-cmd="autoFade">Auto Fade</button><button data-cmd="eq">EQ/Rev/Temp</button>
 
-      <button data-cmd="loop">Loop</button>
-      <button data-cmd="next">Next</button>
-      <button data-cmd="find">Find</button>
-      <button data-cmd="pause">Pause</button>
+      <button data-cmd="loop">Loop</button><button data-cmd="next">Next</button>
+      <button data-cmd="find">Find</button><button data-cmd="pause">Pause</button>
 
-      <button data-cmd="rapid">Rapid Fire</button>
-      <button data-cmd="shuffle">Shuffle</button>
+      <button data-cmd="rapid">Rapid Fire</button><button data-cmd="shuffle">Shuffle</button>
 
-      <button data-cmd="talk">Talk</button>
-      <button data-cmd="playlist">Play List</button>
+      <button data-cmd="talk">Talk</button><button data-cmd="playlist">Play List</button>
       <button data-cmd="resetPage">Reset Page</button>
 
       <button data-cmd="stop" class="danger">STOP</button>
     </div>
 
-    <!-- UTILITY RIBBON -->
+    <!-- util ribbon -->
     <div id="util" class="panel">
       <button id="btn-files">Add Local File(s)</button>
       <button id="btn-export">Export Library</button>
@@ -63,7 +57,7 @@
       <button id="btn-apple">Connect Apple Music</button>
     </div>
 
-    <!-- TRANSPORT / METERS -->
+    <!-- transport -->
     <div id="transport" class="panel">
       <canvas id="meterL" width="60" height="10"></canvas>
       <canvas id="meterR" width="60" height="10"></canvas>
@@ -77,16 +71,15 @@
       <div id="progress"><div id="prog-bar"></div></div>
     </div>
 
-    <!-- TILE GRID -->
+    <!-- grid -->
     <section id="grid"></section>
   </main>
 </div>
 
-<!-- Hidden file pickers -->
+<!-- hidden file pickers -->
 <input type="file" id="file-input"   multiple accept="audio/*" hidden>
 <input type="file" id="import-input"        accept=".zip,.json" hidden>
 
-<!-- Core logic -->
 <script type="module" src="script.js"></script>
 </body>
 </html>
