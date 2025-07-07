@@ -1,23 +1,21 @@
-/* ================================================================
-   Sports Sounds Pro — Web v5 (ES-module, July 2025)
-   ================================================================ */
+/* ============================================================
+   SPORTS SOUNDS PRO — Web v6  (July 2025)
+   ============================================================ */
 import JSZip from "https://cdn.jsdelivr.net/npm/jszip@3.10.1/+esm";
 
-/* ---- tiny helpers ---- */
-const $ = s => document.querySelector(s);
+/* ---------- helpers ---------- */
+const $  = s => document.querySelector(s);
 const pad = n => String(n).padStart(2,"0");
-const rnd = () => `hsl(${Math.random()*360|0},70%,50%)`;
-const fmt = s => isFinite(s)?`${pad(s/60|0)}:${pad(s%60|0)}`:"--:--";
+const rnd = () => `hsl(${Math.floor(Math.random()*360)},70%,50%)`;
+const fmt = s => isFinite(s) ? `${pad(s/60|0)}:${pad(s%60|0)}` : "--:--";
 
-/* ---- persistent state ---- */
-const LS = "ssp_state_v5";
+/* ---------- state ---------- */
+const LS = "ssp_state_v6";
 const letters = [..."ABCDEFGHIJ"];
 const state = {letters:{}, activeLetter:"A", activeCategory:null};
 
 function scaffold(){
-  letters.forEach(l=>{
-    state.letters[l] ??= {categories:{}};
-  });
+  letters.forEach(l=>{state.letters[l] ??= {categories:{}};});
 }
 function load(){
   Object.assign(state, JSON.parse(localStorage.getItem(LS)||"{}"));
@@ -26,18 +24,18 @@ function load(){
 }
 function save(){ localStorage.setItem(LS, JSON.stringify(state)); }
 function ensureCat(){
-  const cats=Object.keys(state.letters[state.activeLetter].categories);
-  state.activeCategory ??= cats[0]||null;
+  const cats = Object.keys(state.letters[state.activeLetter].categories);
+  state.activeCategory ??= cats[0] || null;
 }
 
-/* ---------- IndexedDB ---------- */
+/* ---------- IndexedDB wrapper ---------- */
 const idb = {
   db:null,
   open(){
     return new Promise((res,rej)=>{
       const req=indexedDB.open("ssp_files",1);
       req.onupgradeneeded=e=>e.target.result.createObjectStore("files");
-      req.onsuccess=e=>{this.db=e.target.result;res(this.db);};
+      req.onsuccess=e=>{this.db=e.target.result;res();};
       req.onerror=rej;
     });
   },
@@ -55,17 +53,16 @@ const idb = {
       tx.onsuccess=e=>res(e.target.result); tx.onerror=rej;
     });
   },
-  async *all(){
+  async all(){
     const db=this.db||await this.open();
-    const store=db.transaction("files").objectStore("files").openCursor();
     return new Promise((res,rej)=>{
-      const out=[];
-      store.onsuccess=e=>{
+      const out=[], cur=db.transaction("files").objectStore("files").openCursor();
+      cur.onsuccess=e=>{
         const c=e.target.result;
-        if(c){out.push([c.key,c.value]);c.continue();}
+        if(c){ out.push([c.key,c.value]); c.continue(); }
         else res(out);
       };
-      store.onerror=rej;
+      cur.onerror=rej;
     });
   }
 };
@@ -83,9 +80,10 @@ function buildLetters(){
 }
 function buildCats(){
   const ul=$("#cat-list"); ul.innerHTML="";
-  const cats=state.letters[state.activeLetter].categories;
+  const cats = state.letters[state.activeLetter].categories;
   for(const c of Object.keys(cats)){
-    const li=document.createElement("li"); li.textContent=c;
+    const li=document.createElement("li");
+    li.textContent=c;
     if(c===state.activeCategory) li.classList.add("active");
     li.onclick=_=>{state.activeCategory=c;save();refreshGrid();};
     ul.appendChild(li);
@@ -95,26 +93,29 @@ function buildGrid(){
   const grid=$("#grid"); grid.innerHTML="";
   for(const s of getSounds()){
     const d=document.createElement("div");
-    d.className="tile"; if(s.inactive) d.classList.add("inactive");
-    d.style.background=s.color; d.textContent=s.title;
+    d.className="tile";
+    if(s.inactive) d.classList.add("inactive");
+    if(s.type==="spotify") d.classList.add("spotify");
+    d.style.background ??= rnd();
+    d.textContent=s.title;
     d.onclick=_=>play(s);
     grid.appendChild(d);
   }
 }
 
-/* ---------- sounds helpers ---------- */
+/* ---------- sounds ---------- */
 function getSounds(){
-  return state.letters[state.activeLetter].categories[state.activeCategory]||[];
+  return state.letters[state.activeLetter].categories[state.activeCategory] || [];
 }
 async function addFiles(files){
-  if(!state.activeCategory){alert("Create/select a category first.");return;}
-  const list=getSounds();
+  if(!state.activeCategory){ alert("Create/select a category first."); return; }
+  const list = getSounds();
   for(const f of files){
     const id=crypto.randomUUID();
     await idb.put(id,f);
     list.push({id,title:f.name.replace(/\.[^/.]+$/,""),type:"file",src:"",color:rnd()});
   }
-  await hydrate(); save(); refreshGrid();
+  await hydrate(); save(); refreshGrid(); await lockStorage();
 }
 
 /* ---------- hydration ---------- */
@@ -125,7 +126,8 @@ async function hydrate(){
       for(const s of arr){
         if(s.type==="file" && !s.src){
           tasks.push(idb.get(s.id).then(b=>{
-            if(b)s.src=URL.createObjectURL(b); else s.inactive=true;
+            if(b) s.src = URL.createObjectURL(b);
+            else   s.inactive = true;
           }));
         }
       }
@@ -135,49 +137,60 @@ async function hydrate(){
 }
 
 /* ---------- audio engine ---------- */
-const cfg={multi:false,loop:false,autoFade:false};
+const cfg = {multi:false,loop:false,autoFade:false};
 let current=null, playing=[], analyser=null, meterTimer=null;
 
 function play(s){
   if(!cfg.multi) stopAll();
+
   if(s.type==="file"){
-    const a=new Audio(s.src); a.loop=cfg.loop; a.play();
-    a.onloadedmetadata=_=>$("#t-total").textContent=fmt(a.duration);
-    a.ontimeupdate=_=>{
-      $("#t-elap").textContent=fmt(a.currentTime);
-      $("#t-left").textContent=fmt(a.duration-a.currentTime);
-      $("#prog-bar").style.right=(100-a.currentTime/a.duration*100)+"%";
-    };
-    a.onended=_=>{playing=playing.filter(x=>x!==a);if(!playing.length) clearInterval(meterTimer);};
+    const a=new Audio(s.src);
+    a.loop=cfg.loop; a.play();
     current=a; playing.push(a);
+
+    a.onloadedmetadata=_=>$("#t-total").textContent = fmt(a.duration);
+    a.ontimeupdate=_=>{
+      $("#t-elap").textContent = fmt(a.currentTime);
+      $("#t-left").textContent = fmt(a.duration-a.currentTime);
+      $("#prog-bar").style.right = (100-a.currentTime/a.duration*100)+"%";
+    };
+    a.onended=_=>{
+      playing = playing.filter(x=>x!==a);
+      if(!playing.length){ clearInterval(meterTimer); drawMeter(0,0); }
+    };
     attachMeters(a);
     if(cfg.autoFade && playing.length>1) fadeOut(playing[0],1500);
-  }else if(s.type==="spotify"){spotify.play(s.src);}
-  else if(s.type==="apple"){apple.play(s.src);}
+
+  }else if(s.type==="spotify"){ spotify.play(s.src); }
+  else if(s.type==="apple"){ apple.play(s.src); }
 }
 function stopAll(){
-  playing.forEach(a=>{a.pause();a.currentTime=0;}); playing=[]; current=null;
-  clearInterval(meterTimer); $("#prog-bar").style.right="100%";
-  drawMeter(0,0);
+  playing.forEach(a=>{a.pause();a.currentTime=0;});
+  playing=[]; current=null;
+  clearInterval(meterTimer); drawMeter(0,0);
+  $("#prog-bar").style.right = "100%";
 }
 function fadeOut(a,dur){
   const step=dur/20, dec=a.volume/20;
-  const t=setInterval(()=>{a.volume=Math.max(0,a.volume-dec);if(a.volume===0){a.pause();clearInterval(t);}},step);
+  const t=setInterval(()=>{a.volume=Math.max(0,a.volume-dec); if(a.volume===0){a.pause();clearInterval(t);} },step);
 }
 function attachMeters(a){
   if(!analyser){
     const ctx=new (window.AudioContext||window.webkitAudioContext)();
     analyser=ctx.createAnalyser(); analyser.fftSize=256;
   }
-  const src=analyser.context.createMediaElementSource(a);
-  try{src.connect(analyser).connect(analyser.context.destination);}catch{}
+  try{
+    const src=analyser.context.createMediaElementSource(a);
+    src.connect(analyser).connect(analyser.context.destination);
+  }catch{}  // multiple connects in Chrome can throw
+
   if(!meterTimer){
     meterTimer=setInterval(()=>{
       const data=new Uint8Array(analyser.frequencyBinCount);
       analyser.getByteTimeDomainData(data);
       const rms=Math.sqrt(data.reduce((s,v)=>s+(v-128)**2,0)/data.length)/128;
       drawMeter(rms,rms);
-    },80);
+    },90);
   }
 }
 const cL=$("#meterL"), cR=$("#meterR"), ctxL=cL.getContext("2d"), ctxR=cR.getContext("2d");
@@ -189,9 +202,9 @@ function drawMeter(l,r){
 
 /* ---------- commands ---------- */
 function cmd(c){
-  const toggle=flag=>$(`[data-cmd='${c}']`).classList.toggle("accent-d",flag);
+  const toggle = flag => $(`[data-cmd='${c}']`).classList.toggle("accent-d",flag);
   switch(c){
-    case"cue": if(current)current.currentTime=0; break;
+    case"cue": current&&(current.currentTime=0); break;
     case"multi": cfg.multi=!cfg.multi; toggle(cfg.multi); break;
     case"loop": cfg.loop=!cfg.loop; toggle(cfg.loop); break;
     case"autoFade": cfg.autoFade=!cfg.autoFade; toggle(cfg.autoFade); break;
@@ -199,27 +212,31 @@ function cmd(c){
     case"rapid": current&&(current.playbackRate=2,setTimeout(()=>current.playbackRate=1,3000)); break;
     case"stop": stopAll(); break;
     case"next":{
-      const arr=getSounds(); if(!arr.length)break;
+      const arr=getSounds(); if(!arr.length) break;
       const idx=arr.indexOf(arr.find(x=>x.src===current?.src));
       play(arr[(idx+1)%arr.length]); } break;
-    case"shuffle": {const arr=getSounds();for(let i=arr.length-1;i;i--){const j=Math.random()*(i+1)|0;[arr[i],arr[j]]=[arr[j],arr[i]];}save();refreshGrid();}break;
-    case"find": {
-      const q=prompt("Search title:"); if(!q)break;
-      const hit=find(q); hit?play(hit):alert("Not found");}break;
-    case"resetPage": getSounds().forEach(s=>s.inactive=false),save(),refreshGrid(); break;
-    default:alert("Not yet implemented");
+    case"shuffle": {
+      const arr=getSounds();
+      for(let i=arr.length-1;i;i--){const j=Math.random()*(i+1)|0;[arr[i],arr[j]]=[arr[j],arr[i]];}
+      save(); refreshGrid(); } break;
+    case"find":{
+      const q=prompt("Search title:"); if(!q) break;
+      const hit=find(q); hit?play(hit):alert("Not found"); } break;
+    case"resetPage": getSounds().forEach(t=>t.inactive=false); save(); refreshGrid(); break;
+    default: alert("Not yet implemented"); break;
   }
 }
 function find(q){
+  const low=q.toLowerCase();
   for(const l of letters){
     for(const arr of Object.values(state.letters[l].categories)){
-      const s=arr.find(x=>x.title.toLowerCase().includes(q.toLowerCase()));
-      if(s)return s;
+      const hit=arr.find(s=>s.title.toLowerCase().includes(low));
+      if(hit) return hit;
     }
   }
 }
 
-/* ---------- drag-&-drop ---------- */
+/* ---------- drag-and-drop ---------- */
 function bindDrag(){
   ["dragover","dragenter"].forEach(ev=>document.addEventListener(ev,e=>{
     e.preventDefault(); $("#app").classList.add("drag-hover");
@@ -244,81 +261,161 @@ async function exportLib(){
   a.href=URL.createObjectURL(out); a.download="ssp-library.zip"; a.click();
 }
 async function importLib(file){
-  const zip=await JSZip.loadAsync(file);
-  const json=await zip.file("library.json").async("string");
-  Object.assign(state,JSON.parse(json)); scaffold(); save();
-  const audioFolder=zip.folder("audio");
-  for(const fname of Object.keys(audioFolder.files)){
-    const blob=await audioFolder.file(fname).async("blob");
-    await idb.put(fname.split("/").pop(),blob);
+  const zip = await JSZip.loadAsync(file);
+  const json = await zip.file("library.json").async("string");
+  Object.assign(state, JSON.parse(json)); scaffold(); save();
+
+  const folder = zip.folder("audio");
+  for(const name of Object.keys(folder.files)){
+    const blob = await folder.file(name).async("blob");
+    await idb.put(name.split("/").pop(), blob);
   }
   await hydrate(); refresh(); alert("Import complete");
 }
 
-/* ---------- Spotify helper (PKCE) ---------- */
-const spotify={
-  device:null,player:null,
+/* ---------- Persistent storage helper ---------- */
+async function lockStorage(){
+  if('storage' in navigator && 'persist' in navigator.storage){
+    const granted = await navigator.storage.persist();
+    console.log('Persistent storage', granted ? 'granted' : 'not granted');
+  }
+}
+
+/* ---------- Spotify helper (PKCE + playlist import) ---------- */
+const spotify = {
+  device:null, token:null, player:null, client:null,
+
   async connect(){
-    const token=sessionStorage.getItem("spotify_token")||await this.auth();
-    if(!token)return;
-    await new Promise(res=>{
+    await this._completePKCE();
+    if(!this.token){
+      await this._startPKCE();    // triggers redirect
+      return;
+    }
+    await this._initPlayer();
+    document.body.classList.add("connected");
+    $("#btn-spotify-add").disabled=false;
+    alert("Spotify connected!  Click 'Add Spotify Track/Playlist'.");
+  },
+  play(uri){
+    fetch(`https://api.spotify.com/v1/me/player/play?device_id=${this.device}`,{
+      method:"PUT",
+      headers:{Authorization:`Bearer ${this.token}`,"Content-Type":"application/json"},
+      body:JSON.stringify({uris:[uri]})
+    });
+  },
+
+  /* ---- add tiles ---- */
+  async addFromUri(input){
+    if(!this.token) return alert("Connect Spotify first");
+    const {kind,id}=this._parse(input.trim());
+    if(!kind) { alert("Not a recognised Spotify link or URI"); return; }
+
+    if(kind==="track"){
+      this._pushTile({uri:`spotify:track:${id}`, title:await this._trackName(id)});
+    }else if(kind==="album"){
+      const tracks=await this._albumTracks(id);
+      tracks.forEach(t=>this._pushTile(t));
+    }else if(kind==="playlist"){
+      const tracks=await this._playlistTracks(id);
+      tracks.forEach(t=>this._pushTile(t));
+    }
+    save(); refreshGrid();
+  },
+  _pushTile({uri,title}){
+    const list=getSounds();
+    list.push({id:crypto.randomUUID(),title,type:"spotify",src:uri,color:"#1DB954"});
+  },
+  _parse(u){
+    if(u.startsWith("spotify:track:"))   return {kind:"track",id:u.split(":").pop()};
+    if(u.startsWith("spotify:album:"))   return {kind:"album",id:u.split(":").pop()};
+    if(u.startsWith("spotify:playlist:"))return {kind:"playlist",id:u.split(":").pop()};
+    const m=u.match(/open\.spotify\.com\/(track|album|playlist)\/([A-Za-z0-9]+)/);
+    return m?{kind:m[1],id:m[2]}:{kind:null};
+  },
+  async _trackName(id){
+    const r=await fetch(`https://api.spotify.com/v1/tracks/${id}`,{headers:{Authorization:`Bearer ${this.token}`}}
+    ); const j=await r.json(); return `${j.name} – ${j.artists.map(a=>a.name).join(", ")}`;
+  },
+  async _albumTracks(id){
+    const r=await fetch(`https://api.spotify.com/v1/albums/${id}/tracks?limit=50`,{headers:{Authorization:`Bearer ${this.token}`}}); const j=await r.json();
+    return j.items.map(t=>({uri:`spotify:track:${t.id}`,title:`${t.name} – ${t.artists.map(a=>a.name).join(", ")}`}));
+  },
+  async _playlistTracks(id){
+    const r=await fetch(`https://api.spotify.com/v1/playlists/${id}/tracks?limit=100`,{headers:{Authorization:`Bearer ${this.token}`}}); const j=await r.json();
+    return j.items.filter(x=>x.track).map(({track:t})=>({uri:`spotify:track:${t.id}`,title:`${t.name} – ${t.artists.map(a=>a.name).join(", ")}`}));
+  },
+
+  /* ---- PKCE flow ---- */
+  async _startPKCE(){
+    this.client = prompt("Spotify *Client ID*:");
+    if(!this.client) return;
+    const vf = crypto.randomUUID().replace(/-/g,"");
+    const sha = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(vf));
+    const chal = btoa(String.fromCharCode(...new Uint8Array(sha))).replace(/=/g,"").replace(/\+/g,"-").replace(/\//g,"_");
+
+    sessionStorage.setItem("sp_vf",vf); sessionStorage.setItem("sp_id",this.client);
+    const p = new URLSearchParams({
+      client_id:this.client,response_type:"code",
+      redirect_uri:location.origin+location.pathname,
+      scope:"streaming user-read-playback-state user-modify-playback-state",
+      code_challenge:chal,code_challenge_method:"S256"
+    });
+    location.href="https://accounts.spotify.com/authorize?"+p;
+  },
+  async _completePKCE(){
+    const q=new URLSearchParams(location.search);
+    if(!q.get("code")) return;
+    const code=q.get("code");
+    this.client=sessionStorage.getItem("sp_id");
+    const vf=sessionStorage.getItem("sp_vf");
+
+    const body=new URLSearchParams({
+      client_id:this.client,grant_type:"authorization_code",code,
+      redirect_uri:location.origin+location.pathname,code_verifier:vf
+    });
+    const r=await fetch("https://accounts.spotify.com/api/token",{
+      method:"POST",headers:{"Content-Type":"application/x-www-form-urlencoded"},body
+    });
+    const j=await r.json();
+    if(j.access_token){
+      sessionStorage.setItem("spotify_token",j.access_token);
+      history.replaceState({},document.title,location.pathname);   // clean ?code
+    }
+  },
+  async _initPlayer(){
+    this.token=sessionStorage.getItem("spotify_token");
+    return new Promise(res=>{
       window.onSpotifyWebPlaybackSDKReady=()=>{
-        const p=new Spotify.Player({name:"SSP-Web",getOAuthToken:cb=>cb(token),volume:1});
+        const p=new Spotify.Player({
+          name:"SSP-Web", getOAuthToken:cb=>cb(this.token), volume:1
+        });
         p.addListener("ready",d=>{this.device=d.device_id;res();});
         p.connect(); this.player=p;
       };
     });
-    alert("Spotify ready! Add tiles with URI e.g. spotify:track:ID");
-  },
-  async auth(){
-    const client=prompt("Your Spotify app client-ID:");
-    if(!client)return null;
-    const verifier=crypto.randomUUID().replace(/-/g,"");
-    const challenge=btoa(String.fromCharCode(...new Uint8Array(await crypto.subtle.digest("SHA-256",new TextEncoder().encode(verifier))))).replace(/=/g,"").replace(/\+/g,"-").replace(/\//g,"_");
-    const params=new URLSearchParams({
-      client_id:client,response_type:"code",redirect_uri:location.href,
-      scope:"streaming user-read-playback-state user-modify-playback-state",
-      code_challenge_method:"S256",code_challenge:challenge
-    });
-    location.href=`https://accounts.spotify.com/authorize?${params}`;
-    sessionStorage.setItem("pkce_vf",verifier);
-    return null;
-  },
-  async completePKCE(){
-    if(!location.search.includes("code="))return;
-    const code=new URLSearchParams(location.search).get("code");
-    const verifier=sessionStorage.getItem("pkce_vf");
-    const client=prompt("Spotify client-ID again (finish auth):"); if(!client)return;
-    const body=new URLSearchParams({
-      client_id:client,grant_type:"authorization_code",code,redirect_uri:location.origin+location.pathname,code_verifier:verifier
-    });
-    const r=await fetch("https://accounts.spotify.com/api/token",{method:"POST",headers:{"Content-Type":"application/x-www-form-urlencoded"},body});
-    const j=await r.json();
-    if(j.access_token){sessionStorage.setItem("spotify_token",j.access_token);history.replaceState({},document.title,location.pathname);}
-  },
-  play(uri){
-    if(!this.device)return alert("Connect Spotify first");
-    fetch(`https://api.spotify.com/v1/me/player/play?device_id=${this.device}`,{
-      method:"PUT",
-      headers:{Authorization:`Bearer ${sessionStorage.getItem("spotify_token")}`,"Content-Type":"application/json"},
-      body:JSON.stringify({uris:[uri]})
-    });
   }
 };
 
-/* ---------- Apple stub ---------- */
+/* ---------- Apple Music stub ---------- */
 const apple={
-  async connect(){alert("Insert developer & user token code in script.js");},
-  play(){alert("Apple Music playback not wired");}
+  async connect(){ alert("MusicKit needs developer & user tokens – add code in script.js"); },
+  play(){ alert("Apple playback not wired in this demo"); }
 };
+
+/* ---------- dialogs ---------- */
+function addSpotifyDialog(){
+  const uri=prompt("Paste Spotify track / album / playlist link or URI:");
+  if(uri) spotify.addFromUri(uri);
+}
 
 /* ---------- bindings ---------- */
 function bind(){
   $("#btn-add-cat").onclick=_=>{
-    const n=prompt("Category name:"); if(!n)return;
-    state.letters[state.activeLetter].categories[n]=[]; state.activeCategory=n; save(); refresh();
+    const n=prompt("Category name:"); if(!n) return;
+    state.letters[state.activeLetter].categories[n]=[];
+    state.activeCategory=n; save(); refresh();
   };
-  $("#controls").addEventListener("click",e=>e.target.dataset.cmd&&cmd(e.target.dataset.cmd));
+  $("#controls").onclick=e=>e.target.dataset.cmd && cmd(e.target.dataset.cmd);
   $("#btn-files").onclick=_=>$("#file-input").click();
   $("#file-input").onchange=e=>addFiles(e.target.files);
   bindDrag();
@@ -327,20 +424,22 @@ function bind(){
   $("#btn-import").onclick=_=>$("#import-input").click();
   $("#import-input").onchange=e=>importLib(e.target.files[0]);
 
-  $("#btn-spotify").onclick=_=>spotify.connect();
+  $("#btn-spotify-connect").onclick=_=>spotify.connect();
+  $("#btn-spotify-add").onclick=addSpotifyDialog;
+
   $("#btn-apple").onclick=_=>apple.connect();
 }
 
 /* ---------- init ---------- */
 (async function init(){
-  await spotify.completePKCE();        // finishes OAuth redirect (if any)
+  await spotify._completePKCE();     // finish OAuth if we were redirected
   load();
   await hydrate();
   bind();
   $("#loader").remove(); $("#app").hidden=false;
   refresh();
-  navigator.storage?.persist?.();      // ask for persistent quota once
+  navigator.storage?.persist?.();    // request persistent storage
 })();
 
-function refresh(){buildLetters();buildCats();buildGrid();}
-function refreshGrid(){buildGrid();}
+function refresh(){ buildLetters(); buildCats(); buildGrid(); }
+function refreshGrid(){ buildGrid(); }
