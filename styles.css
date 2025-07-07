@@ -3,6 +3,7 @@
   --accent-d:#0097a7;
   --danger:#d32f2f;
   --green:#1DB954;                 /* Spotify green */
+
   --bg:#fafafa;
   --panel:#e7e7e7;
   --font:system-ui,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
@@ -21,6 +22,7 @@ button:disabled{opacity:.4;cursor:not-allowed}
 #loader{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:var(--bg);z-index:99}
 .spinner{width:48px;height:48px;border:6px solid #ccc;border-top-color:var(--accent);border-radius:50%;animation:spin 1s linear infinite}
 @keyframes spin{to{transform:rotate(360deg)}}
+#loader.fade{transition:opacity .4s ease;opacity:0;pointer-events:none}
 
 /* ---------- layout ---------- */
 #app{display:flex;height:100%}
@@ -55,9 +57,17 @@ canvas{background:#333}
 
 /* Grid */
 #grid{flex:1;padding:6px;overflow:auto;display:grid;gap:var(--gap);grid-template-columns:repeat(auto-fill,minmax(var(--tile-w),1fr))}
-.tile{height:var(--tile-h);display:flex;align-items:center;justify-content:center;text-align:center;font-weight:bold;color:#fff;cursor:pointer;user-select:none}
+.tile{position:relative;height:var(--tile-h);display:flex;align-items:center;justify-content:center;text-align:center;font-weight:bold;color:#fff;cursor:pointer;user-select:none}
 .tile.inactive{opacity:.4}
 .tile.spotify{background:var(--green)}
+
+/* gear icon (settings) */
+.gear{
+  position:absolute;top:4px;right:4px;font-size:12px;
+  padding:2px 4px;border-radius:2px;background:rgba(0,0,0,.6);
+  color:#fff;display:none;cursor:pointer;
+}
+.tile:hover .gear{display:block}
 
 /* Drag-hover outline */
 .drag-hover{outline:3px dashed var(--accent);outline-offset:-6px}
