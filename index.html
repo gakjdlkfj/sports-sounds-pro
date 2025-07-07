@@ -3,64 +3,58 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>Sports Sounds Pro — Web</title>
+  <title>Sports Sounds Pro — Web v5</title>
 
   <link rel="stylesheet" href="styles.css">
-
-  <!-- OPTIONAL: comment out if you don’t need the streaming hooks -->
   <script src="https://sdk.scdn.co/spotify-player.js"></script>
   <script src="https://js-cdn.music.apple.com/musickit/v1/musickit.js"></script>
 </head>
 <body>
-<div id="app">
+<div id="loader"><div class="spinner"></div>Loading&nbsp;library…</div>
 
-  <!-- (A–J) LETTER TABS -->
+<div id="app" hidden>
+
+  <!-- A-J tabs -->
   <div id="letter-tabs"></div>
 
-  <!-- CATEGORY SIDEBAR -->
+  <!-- categories -->
   <aside id="sidebar">
     <button id="btn-add-cat" class="wide accent">+ Add Category</button>
     <ul id="cat-list"></ul>
   </aside>
 
-  <!-- MAIN COLUMN -->
+  <!-- main -->
   <main id="main">
 
-    <!-- CONTROL RIBBON -->
+    <!-- ribbon 1 -->
     <div id="controls" class="panel">
-      <button data-cmd="cue">Cue</button>
-      <button data-cmd="multi">Multi-Play</button>
-      <button data-cmd="autoFade">Auto Fade</button>
-      <button data-cmd="eq">EQ/Rev/Temp</button>
+      <button data-cmd="cue">Cue</button><button data-cmd="multi">Multi-Play</button>
+      <button data-cmd="autoFade">Auto Fade</button><button data-cmd="eq">EQ/Rev/Temp</button>
 
-      <button data-cmd="loop">Loop</button>
-      <button data-cmd="next">Next</button>
-      <button data-cmd="find">Find</button>
-      <button data-cmd="pause">Pause</button>
+      <button data-cmd="loop">Loop</button><button data-cmd="next">Next</button>
+      <button data-cmd="find">Find</button><button data-cmd="pause">Pause</button>
 
-      <button data-cmd="rapid">Rapid Fire</button>
-      <button data-cmd="shuffle">Shuffle</button>
+      <button data-cmd="rapid">Rapid Fire</button><button data-cmd="shuffle">Shuffle</button>
 
-      <button data-cmd="talk">Talk</button>
-      <button data-cmd="playlist">Play List</button>
+      <button data-cmd="talk">Talk</button><button data-cmd="playlist">Play List</button>
       <button data-cmd="resetPage">Reset Page</button>
 
       <button data-cmd="stop" class="danger">STOP</button>
     </div>
 
-    <!-- UTILITY RIBBON -->
+    <!-- ribbon 2 -->
     <div id="util" class="panel">
       <button id="btn-files">Add Local File(s)</button>
+      <button id="btn-export">Export Library</button>
+      <button id="btn-import">Import Library</button>
       <button id="btn-spotify">Connect Spotify</button>
       <button id="btn-apple">Connect Apple Music</button>
     </div>
 
-    <!-- TRANSPORT + METERS -->
+    <!-- transport -->
     <div id="transport" class="panel">
-      <div id="meters">
-        <div class="meter"><div class="bar" id="meterL"></div></div>
-        <div class="meter"><div class="bar" id="meterR"></div></div>
-      </div>
+      <canvas id="meterL" width="60" height="10"></canvas>
+      <canvas id="meterR" width="60" height="10"></canvas>
 
       <div id="time-box">
         <div><small>Total</small><span id="t-total">00:00</span></div>
@@ -71,14 +65,14 @@
       <div id="progress"><div id="prog-bar"></div></div>
     </div>
 
-    <!-- GRID -->
+    <!-- tile grid -->
     <section id="grid"></section>
   </main>
 </div>
 
-<!-- hidden uploader -->
 <input type="file" id="file-input" multiple accept="audio/*" hidden>
+<input type="file" id="import-input" accept=".zip,.json" hidden>
 
-<script src="script.js"></script>
+<script type="module" src="script.js"></script>
 </body>
 </html>
